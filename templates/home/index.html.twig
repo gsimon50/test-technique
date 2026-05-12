@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello HomeController!{% endblock %}
+
+{% block body %}
+
+<div class="hero">
+    
+    <h1>Bonjour {{ user_name }}! ✅</h1>
+
+    <a href="/login">Deconnexion</a>
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}  {# garde le app.scss global #}
+    {{ encore_entry_link_tags('home') }}
+{% endblock %}

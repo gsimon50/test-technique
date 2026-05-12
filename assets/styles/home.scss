@@ -1,0 +1,13 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0px;
+}
+
+.hero {
+    border: 1px solid;
+    border-radius: 20px;
+    padding: 30px 20px;
+}

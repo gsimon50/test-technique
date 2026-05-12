@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ login ? "Connexion" : "Inscription"}}{% endblock %}
+
+{% block body %}
+
+
+<div class="container">
+    <div class="form_auth">
+        {% if login %}
+            <h1>Connexion</h1>
+
+            <form method="post" action="">
+                <label for="email">Adresse e-mail</label>
+                <input type="email" id="email" name="email" placeholder="votre@email.com" required>
+
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" name="password" placeholder="Mot de passe" required>
+
+                <div class="auth-actions">
+                    <button type="submit" name="action" value="login" class="login">Connexion</button>
+                    <a href="/mot-de-passe-oublie" class="forgot-password">Mot de passe oublié</a>
+                    <br>
+                    <a class="btn" href="/register">Vous avez pas de compte ?</a>
+                </div>
+            </form>
+
+        {% elseif not login %}
+
+            <form method="post" action="">
+                <label for="email">Adresse e-mail</label>
+                <input type="email" id="email" name="email" placeholder="votre@email.com" required>
+
+                <label for="email_confirm">Confirmation Adresse e-mail</label>
+                <input type="email" id="email_confirm" name="email_confirm" placeholder="votre@email.com" required>
+
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" name="password" placeholder="Mot de passe" required>
+
+                <label for="password_confirm">Mot de passe</label>
+                <input type="password" id="password_confirm" name="password_confirm" placeholder="Mot de passe" required>
+
+                <div class="auth-actions">
+                    <button type="submit" name="action" value="register" class="register">S'inscrire</button>
+                    <a href="/login">Vous avez un compte ?</a>
+                </div>
+            </form>
+
+        {% else %}
+            <div class="error-message">
+                <p>Une erreur est survenue. Veuillez réessayer.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+
+{% block stylesheets %}
+    {{ parent() }}  {# garde le app.scss global #}
+    {{ encore_entry_link_tags('auth') }}
+{% endblock %}

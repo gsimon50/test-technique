@@ -14,6 +14,8 @@
         "symfony/runtime": "8.0.*",
         "symfony/twig-bundle": "8.0.*",
         "symfony/ux-live-component": "^3.0",
+        "symfony/ux-twig-component": "^3.0",
+        "symfony/webpack-encore-bundle": "^2.4",
         "symfony/yaml": "8.0.*"
     },
     "config": {
@@ -67,5 +69,9 @@
             "allow-contrib": false,
             "require": "8.0.*"
         }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^13.1",
+        "symfony/maker-bundle": "^1.67"
     }
 }
