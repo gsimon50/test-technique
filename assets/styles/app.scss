@@ -1,7 +1,10 @@
 body {
-    background-color: rgb(255, 255, 255);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0px;
 }
-
 .container{
     max-width: 1232px;
     margin: 0px auto 20px;
