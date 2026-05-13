@@ -23,13 +23,15 @@
 
 .form_auth input {
     background: #f8f9fb;
-}
+    padding-left: 10px;
 
-.form_auth input:focus {
+    &:focus {
     outline: none;
     border-color: #5b8def;
     box-shadow: 0 0 0 4px rgba(91, 141, 239, 0.12);
     background: #ffffff;
+    
+    }
 }
 
 .form_auth button {
@@ -51,4 +53,11 @@
     font-size: 1.6rem;
     font-weight: 700;
     color: #2c3e50;
+}
+
+.auth-actions a {
+    display: block;
+    text-align: center;
+    margin-left : auto;
+    margin-right: auto;
 }

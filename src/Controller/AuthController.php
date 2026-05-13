@@ -56,8 +56,6 @@ final class AuthController extends AbstractController
 
             $this->setSession($data);
 
-            
-            
             if(!$data->checkemail){
                 return $this->redirectToRoute('app_mailCheck',[
                     'id' => $data->userId,
@@ -116,7 +114,7 @@ final class AuthController extends AbstractController
         }
     ////// //////
 
-    ////// Enregistrement //////
+    ////// Création //////
 
         #[Route('/register', name: 'app_register_submit', methods: ['POST'])]
         public function createUser(Request $request): Response {
@@ -158,13 +156,11 @@ final class AuthController extends AbstractController
 
             $data->userId = $this->connection->lastInsertId();
 
-            // To do //
-            // Prevoir un envoie de mail avec vérification mail //
-
             $this->setSession($data);
-
-
-            return $this->redirectToRoute('app_home');
+            
+            return $this->redirectToRoute('app_mailCheck',[
+                'id' => $data->userId,
+            ]);
         }
     ////// //////
 
@@ -188,7 +184,7 @@ final class AuthController extends AbstractController
                 throw new \InvalidArgumentException('Les adresses e-mail ne correspondent pas.');
             }
 
-            if ($this->getEmail($mail)) {
+            if ($this->checkEmail($mail)) {
                 throw new \InvalidArgumentException('Email déjà existant.');
             }
 
@@ -196,12 +192,12 @@ final class AuthController extends AbstractController
         }
     ////// //////
 
-    ////// Get Email //////
-        private function getEmail(string $mail): ?bool {
+    ////// check Email //////
+        private function checkEmail(string $mail): ?bool {
             $result = $this->connection->executeQuery(
                 'SELECT * FROM user WHERE email = :email',
                 ['email' => $mail]
-            )->fetchAssociative();
+            )->fetchOne();
 
             return $result;
         }

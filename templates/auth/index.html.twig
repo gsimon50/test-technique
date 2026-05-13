@@ -37,6 +37,8 @@
 
         {% elseif not login %}
 
+            <h1>Creation de compte</h1>
+
             <form method="post" action="/register">
                 <label for="name">Nom</label>
                 <input type="text" id="name" name="nom" placeholder="Nom" {{ nom ? 'value=' ~ nom ~ ''}} required>
@@ -47,18 +49,18 @@
                 <label for="email">Adresse e-mail</label>
                 <input type="email" id="email" name="email" placeholder="votre@email.com" {{ mail ? 'value=' ~ mail ~ ''}} required>
 
-                <label for="email_confirm">Confirmation Adresse e-mail</label>
+                <label for="email_confirm">Confirmation de l'adresse e-mail</label>
                 <input type="email" id="email_confirm" name="email_confirm" placeholder="votre@email.com" {{ mail_check ? 'value=' ~ mail_check ~ ''}} required>
 
                 <label for="password">Mot de passe</label>
                 <input type="password" id="password" name="password" placeholder="Mot de passe" required>
 
-                <label for="password_confirm">Mot de passe</label>
+                <label for="password_confirm">Confirmation du mot de passe</label>
                 <input type="password" id="password_confirm" name="password_confirm" placeholder="Mot de passe" required>
 
                 <div class="auth-actions">
                     <button type="submit" name="action" value="register" class="register">S'inscrire</button>
-                    <a href="/login">Vous avez un compte ?</a>
+                    <a class="btn" href="/login">Vous avez un compte ?</a>
                 </div>
             </form>
 
