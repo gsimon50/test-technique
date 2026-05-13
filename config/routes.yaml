@@ -13,8 +13,13 @@ app_auth:
 
 app_register:
     path: /register
+    methods: [GET]
     controller: App\Controller\AuthController::register
 
+app_register_submit:
+    path: /register
+    methods: [POST]
+    controller: App\Controller\AuthController::createUser
 
 app_home:
     path: /home
