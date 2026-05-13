@@ -30,3 +30,7 @@ app_register_submit:
 app_home:
     path: /home
     controller: App\Controller\HomeController::index
+
+app_logout: 
+    path: /logout
+    controller : App\Controller\HomeController::logout

@@ -8,13 +8,17 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Doctrine\DBAL\Connection;
+use Symfony\Component\HttpFoundation\RequestStack;
+
 
 
 final class AuthController extends AbstractController
 {
 
     public function __construct(
-        private Connection $connection
+        private Connection $connection,
+        private RequestStack $requestStack
+
     ) {}
     
     ////// Accès a la page de connexion //////
@@ -48,6 +52,9 @@ final class AuthController extends AbstractController
                 ]);
             }
 
+            $data = $this->getUserInfo($mail);
+            $this->setSession($data);
+
             return $this->redirectToRoute('app_home');
         }
 
@@ -56,11 +63,13 @@ final class AuthController extends AbstractController
 
     ////// checkUser //////
 
-        private function checkConnexion(string $mail,string $psw){
+        private function checkConnexion(string $mail,string $psw): bool {
 
             if(!$this->getEmailPassword($mail, $psw)){
                 throw new \InvalidArgumentException('Le mail ou le mot de passe ne correspond pas.');
             }
+
+            return true;
         }
 
 
@@ -68,7 +77,7 @@ final class AuthController extends AbstractController
 
     ////// getEmailPassword //////
 
-        private function getEmailPassword(string $mail,string $psw){
+        private function getEmailPassword(string $mail,string $psw): bool {
             $result = $this->connection->executeQuery(
                 'SELECT * FROM user WHERE email = :email;',
                 ['email' => $mail]
@@ -86,8 +95,7 @@ final class AuthController extends AbstractController
 
     ////// Accès a la page de registration //////
         #[Route('/register', name: 'app_register', methods: ['GET'])]
-        public function register(): Response
-        {
+        public function register(): Response {
             return $this->render('auth/index.html.twig', [
                 'login' => false,
                 'nom' => null,
@@ -103,23 +111,26 @@ final class AuthController extends AbstractController
 
         #[Route('/register', name: 'app_register_submit', methods: ['POST'])]
         public function createUser(Request $request): Response {
-            $nom        = $request->request->get('nom');
-            $prenom     = $request->request->get('prenom');
-            $mail       = $request->request->get('email');
-            $mail_check = $request->request->get('email_confirm');
-            $psw        = $request->request->get('password');
-            $psw_check  = $request->request->get('password_confirm');
+            $data = (object) [
+                'nom'              => $request->request->get('nom'),
+                'prenom'           => $request->request->get('prenom'),
+                'email'            => $request->request->get('email'),
+                'password'         => $request->request->get('password'),
+            ];
 
+            $email_confirm = $request->request->get('email_confirm');
+            $password_confirm = $request->request->get('password_confirm');
+   
             try {
-                $password   = $this->checkpsw($psw, $psw_check);
-                $email      = $this->checkmail($mail, $mail_check);
+                $data->email    = $this->checkmail($data->email, $email_confirm);
+                $data->password = $this->checkpsw($data->password, $password_confirm);
             } catch (\InvalidArgumentException $e) {
                 return $this->render('auth/index.html.twig', [
                     'login' => false,
-                    'nom' => $nom,
-                    'prenom' => $prenom,
-                    'mail' => $mail,
-                    'mail_check' => $mail_check,
+                    'nom' => $data->nom,
+                    'prenom' => $data->prenom,
+                    'mail' => $data->email,
+                    'mail_check' => $email_confirm,
                     'error' => $e->getMessage(),
                 ]);
             }
@@ -128,24 +139,28 @@ final class AuthController extends AbstractController
                 'INSERT INTO user (nom, prenom, email, password, roles) 
                     VALUES (:nom, :prenom, :email, :password, :roles)',
                 [
-                    'nom'      => $nom,
-                    'prenom'   => $prenom,
-                    'email'    => $email,
-                    'password' => $password,
+                    'nom'      => $data->nom,
+                    'prenom'   => $data->prenom,
+                    'email'    => $data->email,
+                    'password' => $data->password,
                     'roles'    => '[]',
                 ]
             );
 
+            $data->userId = $this->connection->lastInsertId();
+
             // To do //
             // Prevoir un envoie de mail avec vérification mail //
+
+            $this->setSession($data);
+
 
             return $this->redirectToRoute('app_home');
         }
     ////// //////
 
     ////// Vérification du mot de passe //////
-        private function checkpsw(string $psw,string $psw_check): string
-        {
+        private function checkpsw(string $psw,string $psw_check): string {
             if ($psw !== $psw_check) {
                 throw new \InvalidArgumentException('Les mots de passe ne correspondent pas.');
             }
@@ -159,8 +174,7 @@ final class AuthController extends AbstractController
     ////// //////
 
     ////// Vérification du mail //////
-        private function checkmail(string $mail,string $mail_check): string
-        {
+        private function checkmail(string $mail,string $mail_check): string {
             if ($mail !== $mail_check) {
                 throw new \InvalidArgumentException('Les adresses e-mail ne correspondent pas.');
             }
@@ -174,13 +188,44 @@ final class AuthController extends AbstractController
     ////// //////
 
     ////// Get Email //////
-        private function getEmail(string $mail){
+        private function getEmail(string $mail): ?bool {
             $result = $this->connection->executeQuery(
                 'SELECT * FROM user WHERE email = :email',
                 ['email' => $mail]
             )->fetchAssociative();
 
             return $result;
+        }
+    ////// //////
+
+    ////// Get info User //////
+
+        private function getUserInfo(string $mail): ?object {
+            $result = $this->connection->executeQuery(
+                'SELECT id as userId, email, nom, prenom FROM user WHERE email = :email;',
+                ['email' => $mail]
+            )->fetchAssociative();
+
+            return $result ? (object) $result : null;
+        }
+
+    ////// //////
+
+    ////// setSession //////
+
+        private function setSession(object $data): bool {
+
+            $session = $this->requestStack->getSession();
+
+            $session->set('user', [
+                'id'     => $data->userId,
+                'nom'    => $data->nom,
+                'prenom' => $data->prenom,
+                'email'  => $data->email,
+            ]);
+
+            return true;
+
         }
     ////// //////
 
