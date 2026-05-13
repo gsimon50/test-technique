@@ -34,3 +34,13 @@ app_home:
 app_logout: 
     path: /logout
     controller : App\Controller\HomeController::logout
+
+app_mailCheck: 
+    path: /mailCheck/{id}
+    methods: [GET]
+    controller : App\Controller\MailController::mailVerification
+
+app_mailCheck_post: 
+    path: /mailCheck/{id}
+    methods: [POST]
+    controller : App\Controller\MailController::checkCode

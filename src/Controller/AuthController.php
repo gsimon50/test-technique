@@ -53,7 +53,16 @@ final class AuthController extends AbstractController
             }
 
             $data = $this->getUserInfo($mail);
+
             $this->setSession($data);
+
+            
+            
+            if(!$data->checkemail){
+                return $this->redirectToRoute('app_mailCheck',[
+                    'id' => $data->userId,
+                ]);
+            }
 
             return $this->redirectToRoute('app_home');
         }
@@ -202,7 +211,7 @@ final class AuthController extends AbstractController
 
         private function getUserInfo(string $mail): ?object {
             $result = $this->connection->executeQuery(
-                'SELECT id as userId, email, nom, prenom FROM user WHERE email = :email;',
+                'SELECT id as userId, email, checkemail, nom, prenom FROM user WHERE email = :email;',
                 ['email' => $mail]
             )->fetchAssociative();
 

@@ -37,6 +37,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     private ?string $prenom = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?bool $checkemail = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -132,6 +135,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPrenom(string $prenom): static
     {
         $this->prenom = $prenom;
+
+        return $this;
+    }
+
+    public function isCheckemail(): ?bool
+    {
+        return $this->checkemail;
+    }
+
+    public function setCheckemail(?bool $checkemail): static
+    {
+        $this->checkemail = $checkemail;
 
         return $this;
     }

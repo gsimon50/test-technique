@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}code de validation{% endblock %}
+
+{% block body %}
+
+
+<div class="container">
+    <div class="form_auth">
+
+        {% if error is not empty %}
+        
+        <div class="error">
+            {{error}}
+        </div>
+
+        {% endif %}
+
+        <h1>Verification du code envoyé par email</h1>
+        <form method="post" action="">
+            <label for="code">Code de vérification</label>
+            <input type="text" id="code" name="code" required>
+
+            <button type="submit" name="action" value="register" class="register">Envoyer</button>
+
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block stylesheets %}
+    {{ parent() }}  {# garde le app.scss global #}
+    {{ encore_entry_link_tags('auth') }}
+{% endblock %}
