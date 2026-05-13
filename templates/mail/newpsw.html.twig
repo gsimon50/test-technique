@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}code de validation{% endblock %}
+
+{% block body %}
+
+
+<div class="container">
+    <div class="form_auth">
+
+        {% if error is not empty %}
+        
+        <div class="error">
+            {{error}}
+        </div>
+
+        {% endif %}
+
+        <h1>Reinitialisation du mot de passe</h1>
+        <form method="post" action="">
+            <label for="password">Votre nouveau mot de passe</label>
+            <input type="password" id="password" name="password" required>
+            <label for="pswconfirm">confirmer le nouveau mot de passe</label>
+            <input type="password" id="pswconfirm" name="confirm_password" required>
+
+            <button type="submit" name="action" value="register" class="register">Enregistrer</button>
+            
+            <a href="/login" class="forgot-password">Revenir a la connexion</a>
+
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block stylesheets %}
+    {{ parent() }}  {# garde le app.scss global #}
+    {{ encore_entry_link_tags('auth') }}
+{% endblock %}

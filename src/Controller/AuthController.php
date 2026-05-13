@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\RequestStack;
+use App\Service\CheckPasswordService;
 
 
 
@@ -17,7 +18,9 @@ final class AuthController extends AbstractController
 
     public function __construct(
         private Connection $connection,
-        private RequestStack $requestStack
+        private RequestStack $requestStack,
+        private CheckPasswordService $checkPassword,
+
 
     ) {}
     
@@ -130,7 +133,7 @@ final class AuthController extends AbstractController
    
             try {
                 $data->email    = $this->checkmail($data->email, $email_confirm);
-                $data->password = $this->checkpsw($data->password, $password_confirm);
+                $data->password = $this->checkPassword->checkpsw($data->password, $password_confirm);
             } catch (\InvalidArgumentException $e) {
                 return $this->render('auth/index.html.twig', [
                     'login' => false,
@@ -161,20 +164,6 @@ final class AuthController extends AbstractController
             return $this->redirectToRoute('app_mailCheck',[
                 'id' => $data->userId,
             ]);
-        }
-    ////// //////
-
-    ////// Vérification du mot de passe //////
-        private function checkpsw(string $psw,string $psw_check): string {
-            if ($psw !== $psw_check) {
-                throw new \InvalidArgumentException('Les mots de passe ne correspondent pas.');
-            }
-
-            if (!preg_match('/^(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).*$/', $psw)) {
-                throw new \InvalidArgumentException('Le mot de passe doit contenir au moins une majuscule, un chiffre et un caractère spécial.');
-            }
-
-            return password_hash($psw , PASSWORD_BCRYPT);
         }
     ////// //////
 

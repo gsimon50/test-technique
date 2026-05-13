@@ -44,3 +44,18 @@ app_mailCheck_post:
     path: /mailCheck/{id}
     methods: [POST]
     controller : App\Controller\MailController::checkCode
+
+app_resetPassword:
+    path: /resetpassword
+    methods: [GET, POST]
+    controller : App\Controller\MailController::resetPassword
+
+app_resetPassword_post: 
+    path: /resetpassword
+    methods: [POST]
+    controller : App\Controller\MailController::resetPassword_post
+
+app_newPassword:
+    path: /newpassword/{token}
+    methods: [GET, POST]
+    controller : App\Controller\MailController::newPassword

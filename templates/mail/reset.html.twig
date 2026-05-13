@@ -16,14 +16,14 @@
 
         {% endif %}
 
-        <h1>Verification du code envoyé par email</h1>
+        <h1>Reinitialisation du mot de passe</h1>
         <form method="post" action="">
-            <label for="code">Code de vérification</label>
-            <input type="text" id="code" name="code" required>
+            <label for="email">Votre email</label>
+            <input type="mail" id="email" name="email" required>
 
             <button type="submit" name="action" value="register" class="register">Envoyer</button>
-
-            <a href="/" class="forgot-password">redemander un code</a>
+            
+            <a href="/login" class="forgot-password">Revenir a la connexion</a>
 
         </form>
     </div>

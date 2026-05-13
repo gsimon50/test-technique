@@ -11,9 +11,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Mailer\MailerInterface;
-
-
-
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use App\Service\CheckPasswordService;
 
 final class MailController extends AbstractController
 {
@@ -23,6 +22,8 @@ final class MailController extends AbstractController
         private UserRepository $userRepository,
         private CodecheckerRepository $codeCheckerRepository,
         private MailerInterface $mailer,
+        private CheckPasswordService $checkPassword,
+
     ) {}
 
     ////// Verification du mail  //////
@@ -104,7 +105,6 @@ final class MailController extends AbstractController
 
     ////// //////
 
-
     ////// Check code //////
 
         #[Route('/mailCheck', name: 'app_mailCheck_post', methods: ['POST'])]
@@ -140,21 +140,144 @@ final class MailController extends AbstractController
 
     ////// updateUser //////
 
-    private function updateUser(int $idUser): bool {
-        $this->connection->executeStatement(
-            'UPDATE user SET checkemail = 1 WHERE id = :id',
-            ['id' => $idUser]
-        );
+        private function updateUser(int $idUser): bool {
+            $this->connection->executeStatement(
+                'UPDATE user SET checkemail = 1 WHERE id = :id',
+                ['id' => $idUser]
+            );
 
-        return true;
-    }
-
+            return true;
+        }
 
     ////// //////
 
 
+    ////// passwordReset //////
+
+        #[Route('/resetPassword', name: 'app_resetPassword')]
+        public function resetPassword(Request $request): Response{
+            if ($request->isMethod('POST')) {
+                $email = $request->request->get('email');
+
+                if($email == null){
+                    return $this->render('mail/reset.html.twig', [
+                        'error' => "Pas d'adresse mail renseigner",
+                    ]);     
+                }
+                $user = $this->userRepository->findUserByEmail($email);
+
+                try {
+                    if(!$user){
+                        throw new \InvalidArgumentException('Aucun compte n\'est relier a cette adresse email.');
+                    }
+                } catch (\InvalidArgumentException $e){
+                    return $this->render('mail/reset.html.twig', [
+                        'error' => $e->getMessage(),
+                    ]);            
+                }
+
+                $this->resetPasswordEmail($user);
+
+                return $this->render('mail/reset.html.twig', [
+                    'error' => null,
+                ]);
+            }
+
+            return $this->render('mail/reset.html.twig', [
+                'controller_name' => 'MailController',
+                'error' => null,
+            ]);
+        }
+
+    ////// //////
+
+    ////// resetPasswordEmail //////
+
+        private function resetPasswordEmail(object $user){
+
+                $key = $_ENV['KEYRESETPASS'];
+                $iv = random_bytes(16);
+
+                $encrypted = openssl_encrypt(
+                    $user->getId(),
+                    'AES-256-CBC',
+                    $key,
+                    OPENSSL_RAW_DATA,
+                    $iv
+                );
+
+                $token  = rtrim(strtr(base64_encode($iv . $encrypted), '+/', '-_'), '=');
 
 
+            $url = $this->generateUrl('app_newPassword', 
+                ['token' => $token],
+                UrlGeneratorInterface::ABSOLUTE_URL
+            );
+
+            $email = (new Email())
+                ->from('noreply@test-technique.fr')
+                ->to($user->getEmail())
+                ->subject('Votre lien de réinitialisation de code')
+                ->text('Voici le liens pour reinitialiser votre mot de passe :'.$url );
+                $this->mailer->send($email);
+
+            return $this->redirectToRoute('app_login');
+
+        }
+    
+    ////// //////
+    
+    ////// resetPassword //////
+
+    #[Route('/resetPassword', name: 'app_resetPassword')]
+    public function newPassword(Request $request, string $token){
+
+        $key = $_ENV['KEYRESETPASS'];
+
+        $data = base64_decode(strtr($token, '-_', '+/') . '==');
+
+        $iv = substr($data, 0, 16);
+        $encrypted = substr($data, 16);
+
+        $id = openssl_decrypt(
+            $encrypted,
+            'AES-256-CBC',
+            $key,
+            OPENSSL_RAW_DATA,
+            $iv
+        );
+
+        if ($request->isMethod('POST')) {
+            
+            $password = $request->request->get('password');
+            $password_confirm = $request->request->get('password');
+
+            try {
+                $password = $this->checkPassword->checkpsw($password, $password_confirm);
+            } catch (\InvalidArgumentException $e) {
+                return $this->render('mail/newpsw.html.twig', [
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            $this->connection->executeStatement(
+                'UPDATE user SET password = :password WHERE id = :id',
+                [
+                    'password' => $password,
+                    'id'       => $id,
+                ]
+            );
+
+            return $this->redirectToRoute('app_login');
+        }
+
+        
+        return $this->render('mail/newpsw.html.twig', [
+            'error' => null,
+        ]);
+    }
+
+    ////// //////
 
 
 
