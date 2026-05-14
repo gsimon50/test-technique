@@ -27,12 +27,15 @@ final class AuthController extends AbstractController
     ////// Accès a la page de connexion //////
         
         #[Route('/login', name: 'app_login')]
-        public function index(): Response
+        public function index(Request $request): Response
         {
+            $info = $request->query->get('info');
+
             return $this->render('auth/index.html.twig', [
                 'login' => true,
                 'mail' => null,
                 'error' => '',
+                'info' => $info,
             ]);
         }
 
@@ -52,6 +55,8 @@ final class AuthController extends AbstractController
                     'login' => true,
                     'mail' => $mail,
                     'error' => $e->getMessage(),
+                    'info' => null,
+
                 ]);
             }
 
@@ -113,6 +118,8 @@ final class AuthController extends AbstractController
                 'mail' => null,
                 'mail_check' => null,
                 'error' => '',
+                'info' => null,
+
             ]);
         }
     ////// //////
@@ -142,6 +149,8 @@ final class AuthController extends AbstractController
                     'mail' => $data->email,
                     'mail_check' => $email_confirm,
                     'error' => $e->getMessage(),
+                    'info' => null,
+
                 ]);
             }
             

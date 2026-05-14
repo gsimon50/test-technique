@@ -4,7 +4,6 @@
 
 {% block body %}
 
-
 <div class="container">
     <div class="form_auth">
 
@@ -17,7 +16,7 @@
         {% endif %}
 
         <h1>Reinitialisation du mot de passe</h1>
-        <form method="post" action="">
+        <form method="post" action="{{ path('app_resetPassword') }}">
             <label for="email">Votre email</label>
             <input type="mail" id="email" name="email" required>
 

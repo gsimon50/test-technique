@@ -9,10 +9,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\DBAL\Connection;
-use Symfony\Component\Mime\Email;
-use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use App\Service\CheckPasswordService;
+use App\Service\MailTransportService;
 
 final class MailController extends AbstractController
 {
@@ -21,8 +20,8 @@ final class MailController extends AbstractController
         private Connection $connection,
         private UserRepository $userRepository,
         private CodecheckerRepository $codeCheckerRepository,
-        private MailerInterface $mailer,
         private CheckPasswordService $checkPassword,
+        private MailTransportService $mail_transport_service,
 
     ) {}
 
@@ -38,7 +37,7 @@ final class MailController extends AbstractController
             if(empty($user)){
                 return $this->render('mail/index.html.twig', [
                     'controller_name' => 'MailController',
-                    'error' => 'pas de compte',
+                    'error' => 'Pas de compte relier a cette email.',
                 ]);
             }
 
@@ -56,14 +55,23 @@ final class MailController extends AbstractController
 
             /// Envoie du code
 
-            $email = (new Email())
-            ->from('noreply@test-technique.fr')
-            ->to($user->getEmail())
-            ->subject('Votre code de validation')
-            ->text('Voici le code de validation <br> '.$code.' <br> Bonne reception');
-            $this->mailer->send($email);
+            $from = "noreply@test-technique.fr";
+            $to = $user->getEmail();
+            $subject = "Votre code de validation";
+            $text =  'Voici le code de validation <br> '.$code.' <br> Bonne reception';
 
-            /// Post du code -> Si il est ok alors validation ok
+            $email = $this->mail_transport_service->mailer($from,$to,$subject,$text);
+
+            if (!$email) {
+                return $this->render('mail/index.html.twig', [
+                    'controller_name' => 'MailController',
+                    'error' => 'Problème de mail, merci de réessayer plus tard.',
+                ]);
+            } else {
+                 return $this->render('mail/index.html.twig', [
+                    'error' => 'Vérifier votre boite mail afin de valider le code.',
+                ]);
+            }
 
             return $this->render('mail/index.html.twig', [
                 'controller_name' => 'MailController',
@@ -176,11 +184,18 @@ final class MailController extends AbstractController
                     ]);            
                 }
 
-                $this->resetPasswordEmail($user);
+                $email_reset = $this->resetPasswordEmail($user);
 
-                return $this->render('mail/reset.html.twig', [
-                    'error' => null,
-                ]);
+                 if (!$email_reset) {
+                    return $this->render('mail/reset.html.twig', [
+                        'controller_name' => 'MailController',
+                        'error' => 'Problème de mail, merci de réessayer plus tard.',
+                    ]);
+                } else {
+                    return $this->redirectToRoute('app_login',[
+                        'info' => "Un mail de reinitiliation vient de vous être envoyé",
+                    ]);
+                }
             }
 
             return $this->render('mail/reset.html.twig', [
@@ -193,7 +208,7 @@ final class MailController extends AbstractController
 
     ////// resetPasswordEmail //////
 
-        private function resetPasswordEmail(object $user){
+        private function resetPasswordEmail(object $user): bool{
 
                 $key = $_ENV['KEYRESETPASS'];
                 $iv = random_bytes(16);
@@ -214,14 +229,14 @@ final class MailController extends AbstractController
                 UrlGeneratorInterface::ABSOLUTE_URL
             );
 
-            $email = (new Email())
-                ->from('noreply@test-technique.fr')
-                ->to($user->getEmail())
-                ->subject('Votre lien de réinitialisation de code')
-                ->text('Voici le liens pour reinitialiser votre mot de passe :'.$url );
-                $this->mailer->send($email);
+            $from = "noreply@test-technique.fr";
+            $to = $user->getEmail();
+            $subject = "Votre lien de réinitialisation de mot de passe";
+            $text =  'Voici le liens pour reinitialiser votre mot de passe :'.$url;
 
-            return $this->redirectToRoute('app_login');
+            $email = $this->mail_transport_service->mailer($from,$to,$subject,$text);
+
+            return $email;
 
         }
     
@@ -229,7 +244,7 @@ final class MailController extends AbstractController
     
     ////// resetPassword //////
 
-    #[Route('/resetPassword', name: 'app_resetPassword')]
+    #[Route('/newpassword/{token}', name: 'app_newPassword')]
     public function newPassword(Request $request, string $token){
 
         $key = $_ENV['KEYRESETPASS'];
@@ -268,7 +283,9 @@ final class MailController extends AbstractController
                 ]
             );
 
-            return $this->redirectToRoute('app_login');
+            return $this->redirectToRoute('app_login',[
+                "info" => "Votre mot de passe c'est bien reinitialiser"
+            ]);
         }
 
         
