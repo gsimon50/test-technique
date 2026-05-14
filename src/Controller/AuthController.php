@@ -76,7 +76,8 @@ final class AuthController extends AbstractController
 
     ////// //////
 
-    ////// Accès a la page de registration //////
+    ////// Accès a la page de creation //////
+
         #[Route('/register', name: 'app_register', methods: ['GET'])]
         public function register(): Response {
             return $this->render('auth/index.html.twig', [
@@ -90,6 +91,7 @@ final class AuthController extends AbstractController
 
             ]);
         }
+
     ////// //////
 
     ////// Création //////
@@ -144,7 +146,7 @@ final class AuthController extends AbstractController
         }
     ////// //////
 
-    ////// checkUser //////
+    ////// checkConnexion //////
 
         private function checkConnexion(string $mail,string $psw): bool {
 
@@ -158,7 +160,7 @@ final class AuthController extends AbstractController
 
     ////// //////
 
-    ////// getEmailPassword //////
+    ////// Verification du mot de passe //////
 
         private function getEmailPassword(string $mail,string $psw): bool {
             $result = $this->connection->executeQuery(
@@ -176,13 +178,13 @@ final class AuthController extends AbstractController
 
     ////// //////
 
-    ////// Vérification du mail //////
+    ////// Vérification du mail et si l'utilisateur n'existe pas déjà //////
         private function checkmail(string $mail,string $mail_check): string {
             if ($mail !== $mail_check) {
                 throw new \InvalidArgumentException('Les adresses e-mail ne correspondent pas.');
             }
 
-            if ($this->checkEmail($mail)) {
+            if ($this->checkEmailAllreadyExist($mail)) {
                 throw new \InvalidArgumentException('Email déjà existant.');
             }
 
@@ -190,8 +192,8 @@ final class AuthController extends AbstractController
         }
     ////// //////
 
-    ////// check Email //////
-        private function checkEmail(string $mail): ?bool {
+    ////// check Email si il exite déjà en bdd //////
+        private function checkEmailAllreadyExist(string $mail): ?bool {
             $result = $this->connection->executeQuery(
                 'SELECT * FROM user WHERE email = :email',
                 ['email' => $mail]
@@ -225,6 +227,7 @@ final class AuthController extends AbstractController
                 'nom'    => $data->nom,
                 'prenom' => $data->prenom,
                 'email'  => $data->email,
+                'checkemail'  => $data->checkemail,
             ]);
 
             return true;

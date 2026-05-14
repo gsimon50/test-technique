@@ -21,6 +21,12 @@ final class HomeController extends AbstractController
                 return $this->redirectToRoute('app_login');
             }
 
+            if(!$user['checkemail']){
+                return $this->redirectToRoute('app_mailCheck',[
+                    'id' => $user["id"],
+                ]);
+            }
+
             return $this->render('home/index.html.twig', [
                 'user_name' => $user['nom'] .' '. $user['prenom'],
             ]);

@@ -155,7 +155,7 @@ final class MailController extends AbstractController
 
     ////// //////
 
-    ////// resetPassword //////
+    ////// newPassword //////
 
         #[Route('/newpassword/{token}', name: 'app_newPassword')]
         public function newPassword(Request $request, string $token){
@@ -209,7 +209,7 @@ final class MailController extends AbstractController
 
     ////// //////
 
-    ////// Check duplicat code  //////
+    ////// Check duplicat code verif email //////
 
         private function duplicatCode(int $idUser) : bool{
 
@@ -224,7 +224,7 @@ final class MailController extends AbstractController
 
     ////// //////
 
-    ////// Remove old code //////
+    ////// Remove old code email//////
 
         private function deleteOldCode(int $idUser): bool {
 
@@ -241,7 +241,7 @@ final class MailController extends AbstractController
 
     ////// //////
 
-    ////// updateUser //////
+    ////// update User on checkemail //////
 
         private function updateUser(int $idUser): bool {
             $this->connection->executeStatement(
