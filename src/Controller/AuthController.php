@@ -76,38 +76,6 @@ final class AuthController extends AbstractController
 
     ////// //////
 
-    ////// checkUser //////
-
-        private function checkConnexion(string $mail,string $psw): bool {
-
-            if(!$this->getEmailPassword($mail, $psw)){
-                throw new \InvalidArgumentException('Le mail ou le mot de passe ne correspond pas.');
-            }
-
-            return true;
-        }
-
-
-    ////// //////
-
-    ////// getEmailPassword //////
-
-        private function getEmailPassword(string $mail,string $psw): bool {
-            $result = $this->connection->executeQuery(
-                'SELECT * FROM user WHERE email = :email;',
-                ['email' => $mail]
-            )->fetchAssociative();
-
-            if (!$result) {
-                return false;
-            }
-
-            return password_verify($psw, $result['password']);
-        }
-
-
-    ////// //////
-
     ////// Accès a la page de registration //////
         #[Route('/register', name: 'app_register', methods: ['GET'])]
         public function register(): Response {
@@ -174,6 +142,38 @@ final class AuthController extends AbstractController
                 'id' => $data->userId,
             ]);
         }
+    ////// //////
+
+    ////// checkUser //////
+
+        private function checkConnexion(string $mail,string $psw): bool {
+
+            if(!$this->getEmailPassword($mail, $psw)){
+                throw new \InvalidArgumentException('Le mail ou le mot de passe ne correspond pas.');
+            }
+
+            return true;
+        }
+
+
+    ////// //////
+
+    ////// getEmailPassword //////
+
+        private function getEmailPassword(string $mail,string $psw): bool {
+            $result = $this->connection->executeQuery(
+                'SELECT * FROM user WHERE email = :email;',
+                ['email' => $mail]
+            )->fetchAssociative();
+
+            if (!$result) {
+                return false;
+            }
+
+            return password_verify($psw, $result['password']);
+        }
+
+
     ////// //////
 
     ////// Vérification du mail //////

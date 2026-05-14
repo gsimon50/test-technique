@@ -72,44 +72,7 @@ final class MailController extends AbstractController
                     'error' => 'Vérifier votre boite mail afin de valider le code.',
                 ]);
             }
-
-            return $this->render('mail/index.html.twig', [
-                'controller_name' => 'MailController',
-                'error' => null,
-            ]);
         }   
-
-    ////// //////
-
-    ////// Check duplicat code  //////
-
-        private function duplicatCode(int $idUser) : bool{
-
-            $code = $this->codeCheckerRepository->findCodeByUserId($idUser);
-            if (!empty($code)){
-                $this->deleteOldCode($idUser);
-            }
-
-            return true;
-
-        }
-
-    ////// //////
-
-    ////// Remove old code //////
-
-        private function deleteOldCode(int $idUser): bool {
-
-            $this->connection->executeStatement(
-                'DELETE FROM codechecker WHERE id_user = :id_user',
-                [
-                    'id_user'      => $idUser,
-                ]
-            );
-
-            return true;
-
-        }
 
     ////// //////
 
@@ -145,20 +108,6 @@ final class MailController extends AbstractController
 
 
     ////// //////
-
-    ////// updateUser //////
-
-        private function updateUser(int $idUser): bool {
-            $this->connection->executeStatement(
-                'UPDATE user SET checkemail = 1 WHERE id = :id',
-                ['id' => $idUser]
-            );
-
-            return true;
-        }
-
-    ////// //////
-
 
     ////// passwordReset //////
 
@@ -206,6 +155,105 @@ final class MailController extends AbstractController
 
     ////// //////
 
+    ////// resetPassword //////
+
+        #[Route('/newpassword/{token}', name: 'app_newPassword')]
+        public function newPassword(Request $request, string $token){
+
+            $key = $_ENV['KEYRESETPASS'];
+
+            $data = base64_decode(strtr($token, '-_', '+/') . '==');
+
+            $iv = substr($data, 0, 16);
+            $encrypted = substr($data, 16);
+
+            $id = openssl_decrypt(
+                $encrypted,
+                'AES-256-CBC',
+                $key,
+                OPENSSL_RAW_DATA,
+                $iv
+            );
+
+            if ($request->isMethod('POST')) {
+                
+                $password = $request->request->get('password');
+                $password_confirm = $request->request->get('password');
+
+                try {
+                    $password = $this->checkPassword->checkpsw($password, $password_confirm);
+                } catch (\InvalidArgumentException $e) {
+                    return $this->render('mail/newpsw.html.twig', [
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+
+                $this->connection->executeStatement(
+                    'UPDATE user SET password = :password WHERE id = :id',
+                    [
+                        'password' => $password,
+                        'id'       => $id,
+                    ]
+                );
+
+                return $this->redirectToRoute('app_login',[
+                    "info" => "Votre mot de passe c'est bien reinitialiser"
+                ]);
+            }
+
+            
+            return $this->render('mail/newpsw.html.twig', [
+                'error' => null,
+            ]);
+        }
+
+    ////// //////
+
+    ////// Check duplicat code  //////
+
+        private function duplicatCode(int $idUser) : bool{
+
+            $code = $this->codeCheckerRepository->findCodeByUserId($idUser);
+            if (!empty($code)){
+                $this->deleteOldCode($idUser);
+            }
+
+            return true;
+
+        }
+
+    ////// //////
+
+    ////// Remove old code //////
+
+        private function deleteOldCode(int $idUser): bool {
+
+            $this->connection->executeStatement(
+                'DELETE FROM codechecker WHERE id_user = :id_user',
+                [
+                    'id_user'      => $idUser,
+                ]
+            );
+
+            return true;
+
+        }
+
+    ////// //////
+
+    ////// updateUser //////
+
+        private function updateUser(int $idUser): bool {
+            $this->connection->executeStatement(
+                'UPDATE user SET checkemail = 1 WHERE id = :id',
+                ['id' => $idUser]
+            );
+
+            return true;
+        }
+
+    ////// //////
+
     ////// resetPasswordEmail //////
 
         private function resetPasswordEmail(object $user): bool{
@@ -241,62 +289,4 @@ final class MailController extends AbstractController
         }
     
     ////// //////
-    
-    ////// resetPassword //////
-
-    #[Route('/newpassword/{token}', name: 'app_newPassword')]
-    public function newPassword(Request $request, string $token){
-
-        $key = $_ENV['KEYRESETPASS'];
-
-        $data = base64_decode(strtr($token, '-_', '+/') . '==');
-
-        $iv = substr($data, 0, 16);
-        $encrypted = substr($data, 16);
-
-        $id = openssl_decrypt(
-            $encrypted,
-            'AES-256-CBC',
-            $key,
-            OPENSSL_RAW_DATA,
-            $iv
-        );
-
-        if ($request->isMethod('POST')) {
-            
-            $password = $request->request->get('password');
-            $password_confirm = $request->request->get('password');
-
-            try {
-                $password = $this->checkPassword->checkpsw($password, $password_confirm);
-            } catch (\InvalidArgumentException $e) {
-                return $this->render('mail/newpsw.html.twig', [
-                    'error' => $e->getMessage(),
-                ]);
-            }
-
-            $this->connection->executeStatement(
-                'UPDATE user SET password = :password WHERE id = :id',
-                [
-                    'password' => $password,
-                    'id'       => $id,
-                ]
-            );
-
-            return $this->redirectToRoute('app_login',[
-                "info" => "Votre mot de passe c'est bien reinitialiser"
-            ]);
-        }
-
-        
-        return $this->render('mail/newpsw.html.twig', [
-            'error' => null,
-        ]);
-    }
-
-    ////// //////
-
-
-
-
 }
