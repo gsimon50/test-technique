@@ -29,6 +29,11 @@ h1{
     font-size: 1.7rem;
 }
 
+
+a {
+    display: block;
+}
+
 a.btn {
     width: fit-content;
     display: inline-block;
@@ -41,6 +46,7 @@ a.btn {
     text-decoration: none;
     transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
     box-shadow: 0 10px 20px rgba(74, 144, 226, 0.18);
+    margin-bottom: 15px;
     &:hover {
         background: #4a75d1;
     }
