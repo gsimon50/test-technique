@@ -102,6 +102,11 @@ final class MailController extends AbstractController
                     'error' => $e->getMessage(),
                 ]);
             }
+
+            $user = $request->getSession()->get('user');
+            $user['checkemail'] = '1';
+            $request->getSession()->set('user', $user);
+            
             return $this->redirectToRoute('app_home');
 
         }

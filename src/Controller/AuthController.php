@@ -137,6 +137,7 @@ final class AuthController extends AbstractController
             );
 
             $data->userId = $this->connection->lastInsertId();
+            $data->checkemail = 0;
 
             $this->setSession($data);
             
@@ -227,7 +228,7 @@ final class AuthController extends AbstractController
                 'nom'    => $data->nom,
                 'prenom' => $data->prenom,
                 'email'  => $data->email,
-                'checkemail'  => $data->checkemail,
+                'checkemail'  => ($data->checkemail)? 1 : 0,
             ]);
 
             return true;
