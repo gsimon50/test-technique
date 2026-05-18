@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use BcMath\Number;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -39,6 +41,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(nullable: true)]
     private ?bool $checkemail = null;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    private ?\DateTime $birthday = null;
+
+    #[ORM\Column(type: Types::STRING, length: 15, nullable: true)]
+    private ?string $numsecu = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $pseudo = null;
+
+    #[ORM\Column]
+    private ?int $numcombat = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $pokemon = null;
 
     public function getId(): ?int
     {
@@ -147,6 +164,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCheckemail(?bool $checkemail): static
     {
         $this->checkemail = $checkemail;
+
+        return $this;
+    }
+
+    public function getBirthday(): ?\DateTime
+    {
+        return $this->birthday;
+    }
+
+    public function setBirthday(\DateTime $birthday): static
+    {
+        $this->birthday = $birthday;
+
+        return $this;
+    }
+
+    public function getNumsecu(): ?Number
+    {
+        return $this->numsecu;
+    }
+
+    public function setNumsecu(?Number $numsecu): static
+    {
+        $this->numsecu = $numsecu;
+
+        return $this;
+    }
+
+    public function getPseudo(): ?string
+    {
+        return $this->pseudo;
+    }
+
+    public function setPseudo(?string $pseudo): static
+    {
+        $this->pseudo = $pseudo;
+
+        return $this;
+    }
+
+    public function getNumcombat(): ?Number
+    {
+        return $this->numcombat;
+    }
+
+    public function setNumcombat(?Number $numcombat): static
+    {
+        $this->numcombat = $numcombat;
+
+        return $this;
+    }
+
+    public function getPokemon(): ?string
+    {
+        return $this->pokemon;
+    }
+
+    public function setPokemon(string $pokemon): static
+    {
+        $this->pokemon = $pokemon;
 
         return $this;
     }

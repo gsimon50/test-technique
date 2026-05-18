@@ -86,6 +86,11 @@ final class AuthController extends AbstractController
                 'prenom' => null,
                 'mail' => null,
                 'mail_check' => null,
+                'birthdate'        => null,
+                'social_security'  => null,
+                'fighter_name'     => null,
+                'numcombat'        => null,
+                'pokemon'          => null,
                 'error' => '',
                 'info' => null,
 
@@ -103,6 +108,11 @@ final class AuthController extends AbstractController
                 'prenom'           => $request->request->get('prenom'),
                 'email'            => $request->request->get('email'),
                 'password'         => $request->request->get('password'),
+                'birthdate'        => $request->request->get('birthdate'),
+                'social_security'  => $request->request->get('social_security'),
+                'fighter_name'     => $request->request->get('fighter_name'),
+                'numcombat'        => $request->request->get('numcombat'),
+                'pokemon'          => $request->request->get('pokemon'),
             ];
 
             $email_confirm = $request->request->get('email_confirm');
@@ -111,6 +121,7 @@ final class AuthController extends AbstractController
             try {
                 $data->email    = $this->checkmail($data->email, $email_confirm);
                 $data->password = $this->checkPassword->checkpsw($data->password, $password_confirm);
+                $data->fighter_name = $this->checkfightername($data->fighter_name);
             } catch (\InvalidArgumentException $e) {
                 return $this->render('auth/index.html.twig', [
                     'login' => false,
@@ -118,25 +129,38 @@ final class AuthController extends AbstractController
                     'prenom' => $data->prenom,
                     'mail' => $data->email,
                     'mail_check' => $email_confirm,
+                    'birthdate' => $data->birthdate,
+                    'social_security' => $data->social_security,
+                    'fighter_name' => $data->fighter_name,
+                    'pokemon' => $data->pokemon,
                     'error' => $e->getMessage(),
                     'info' => null,
 
                 ]);
             }
+
+
             
             $this->connection->executeStatement(
-                'INSERT INTO user (nom, prenom, email, password, roles) 
-                    VALUES (:nom, :prenom, :email, :password, :roles)',
+                'INSERT INTO user (nom, prenom, email, password,birthday,numsecu,pseudo,numcombat,pokemon,roles) 
+                    VALUES (:nom, :prenom, :email, :password,:birthday, :numsecu ,:pseudo ,:numcombat ,:pokemon ,:roles)',
                 [
                     'nom'      => $data->nom,
                     'prenom'   => $data->prenom,
                     'email'    => $data->email,
                     'password' => $data->password,
+                    'birthday' => $data->birthdate,
+                    'numsecu' => $data->social_security,
+                    'pseudo' => $data->fighter_name,
+                    'numcombat' => 1,
+                    'pokemon' => $data->pokemon,
                     'roles'    => '[]',
                 ]
             );
 
             $data->userId = $this->connection->lastInsertId();
+
+            $this->getNumeroAccreditation($data->userId);
             $data->checkemail = 0;
 
             $this->setSession($data);
@@ -204,6 +228,22 @@ final class AuthController extends AbstractController
         }
     ////// //////
 
+     ////// Vérification du mail et si l'utilisateur n'existe pas déjà //////
+        private function checkfightername(string $pseudo): string {
+
+            $result = $this->connection->executeQuery(
+                    'SELECT * FROM user WHERE pseudo = :pseudo',
+                    ['pseudo' => $pseudo]
+            )->fetchOne();
+
+            if ($result) {
+                throw new \InvalidArgumentException('Pseudo déjà existant.');
+            }
+
+            return $pseudo;
+        }
+    ////// //////
+
     ////// Get info User //////
 
         private function getUserInfo(string $mail): ?object {
@@ -214,6 +254,25 @@ final class AuthController extends AbstractController
 
             return $result ? (object) $result : null;
         }
+
+    ////// //////
+
+    ////// GetNuméro accreditation //////
+
+    private function getNumeroAccreditation(int $id): bool
+    {
+        $num_cerfa = 666 . $id;
+
+        $this->connection->executeStatement(
+            'UPDATE user SET numcombat = :numcombat WHERE id = :id',
+            [
+                'numcombat' => $num_cerfa,
+                'id' => $id
+            ]
+        );
+
+        return true;
+    }
 
     ////// //////
 
@@ -228,6 +287,11 @@ final class AuthController extends AbstractController
                 'nom'    => $data->nom,
                 'prenom' => $data->prenom,
                 'email'  => $data->email,
+                'birthday' => $data->birthdate,
+                'numsecu' => $data->social_security,
+                'pseudo' => $data->fighter_name,
+                'numcombat' => $data->numcombat,
+                'pokemon' => $data->pokemon,
                 'checkemail'  => ($data->checkemail)? 1 : 0,
             ]);
 

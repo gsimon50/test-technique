@@ -57,6 +57,23 @@
                 <label for="email_confirm">Confirmation de l'adresse e-mail</label>
                 <input type="email" id="email_confirm" name="email_confirm" placeholder="votre@email.com" {{ mail_check ? 'value=' ~ mail_check ~ ''}} required>
 
+                <label for="birthdate">Date de naissance</label>
+                <input type="date" id="birthdate" name="birthdate" value={{ birthdate ? birthdate : "2000-01-01" }} required>
+
+                <label for="social_security">Numéro de sécurité sociale</label>
+                <input type="text" id="social_security" name="social_security" placeholder="1234567890123" {{ social_security ? 'value=' ~ social_security ~ ''}} required>
+
+                <label for="fighter_name">Pseudo de combattant</label>
+                <input type="text" id="fighter_name" name="fighter_name" placeholder="SachaDu93"  {{ fighter_name ? 'value=' ~ fighter_name ~ ''}} require>
+
+                <label for="pokemon">Sélection du Pokémon</label>
+                <select id="pokemon" name="pokemon" required>
+                    <option value="">-- Choisir un Pokémon --</option>
+                    <option value="bulbizarre" {{ (pokemon ==  "bulbizarre") ? 'selected'}} >Bulbizarre</option>
+                    <option value="salameche" {{ (pokemon == "salameche" ) ? 'selected' }} >Salamèche</option>
+                    <option value="carapuce" {{ (pokemon ==  "carapuce") ? 'selected' }} >Carapuce</option>
+                </select>
+
                 <label for="password">Mot de passe</label>
                 <input type="password" id="password" name="password" placeholder="Mot de passe" required>
 
